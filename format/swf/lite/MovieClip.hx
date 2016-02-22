@@ -586,45 +586,13 @@ class MovieClip extends flash.display.MovieClip {
 	
 	@:noCompletion private function __renderFrame (index:Int):Void {
 		
-		var previousIndex = __lastUpdate - 1;
 		
+		var previousIndex = __lastUpdate;
 		if (previousIndex > index) {
 			
-			// TODO: Better way to handle this?
-			
-			var displayObject, exists;
-			
-			for (id in __objects.keys ()) {
-				
-				exists = false;
-				
-				for (frameObject in __symbol.frames[0].objects) {
-					
-					if (frameObject.id == id) {
-						
-						exists = true;
-						break;
-						
-					}
-					
-				}
-				
-				if (!exists) {
-					
-					displayObject = __objects.get (id);
-					
-					if (displayObject.parent == this) {
-						
-						removeChild (displayObject);
-						
-					}
-					
-					__objects.remove (id);
-					
-				}
-				
-			}
-			
+
+			__objects = new Map();
+			removeChildren(0, numChildren);
 			previousIndex = 0;
 			
 		}
@@ -664,16 +632,8 @@ class MovieClip extends flash.display.MovieClip {
 						
 						if (displayObject != null) {
 							
-							if (frameObject.depth >= numChildren) {
-								
-								addChild (displayObject);
-								
-							} else {
-								
-								addChildAt (displayObject, frameObject.depth);
-								
-							}
-							
+
+							addChildAt (displayObject, frameObject.depth);
 							__objects.set (frameObject.id, displayObject);
 							
 						}
@@ -682,6 +642,14 @@ class MovieClip extends flash.display.MovieClip {
 						
 						displayObject = __objects.get (frameObject.id);
 						
+						if( frameObject.type == FrameObjectType.UPDATE_CHARACTER ){
+
+							removeChild(displayObject);
+
+							displayObject = __createObject (frameObject);
+							addChildAt (displayObject, frameObject.depth);
+							__objects.set (frameObject.id, displayObject);
+						}
 					}
 					
 					if (displayObject != null) {

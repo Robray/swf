@@ -5,6 +5,7 @@ enum FrameObjectType {
 	
 	CREATE;
 	UPDATE;
+	UPDATE_CHARACTER;
 	DESTROY;
 	
 }

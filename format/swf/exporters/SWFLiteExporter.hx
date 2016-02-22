@@ -475,9 +475,15 @@ class SWFLiteExporter {
 					processTag (cast data.getCharacter (object.characterId));
 					
 					placeTag = cast tag.tags[object.placedAtIndex];
-					
-				} else if (object.lastModifiedAtIndex > lastModified.get (object.placedAtIndex)) {
-					
+
+				} else if ( object.isKeyframe ){
+
+					processTag (cast data.getCharacter (object.characterId));
+					placeTag = cast tag.tags[object.lastModifiedAtIndex];
+
+				}
+				else if (object.lastModifiedAtIndex > lastModified.get (object.placedAtIndex) ) {
+
 					placeTag = cast tag.tags[object.lastModifiedAtIndex];
 					
 				} else {
@@ -498,8 +504,11 @@ class SWFLiteExporter {
 					
 				} else {
 					
-					frameObject.type = FrameObjectType.UPDATE;
-					
+					if( object.isKeyframe ){
+						frameObject.type = FrameObjectType.UPDATE_CHARACTER;
+					} else {
+						frameObject.type = FrameObjectType.UPDATE;
+					}
 				}
 				
 				if (placeTag.matrix != null) {
