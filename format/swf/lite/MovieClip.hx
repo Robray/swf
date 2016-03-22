@@ -644,9 +644,14 @@ class MovieClip extends flash.display.MovieClip {
 						
 						if( frameObject.type == FrameObjectType.UPDATE_CHARACTER ){
 
+							var oldObject : DisplayObject = displayObject;
 							removeChild(displayObject);
 
 							displayObject = __createObject (frameObject);
+							displayObject.name = oldObject.name;
+							displayObject.transform.matrix = oldObject.transform.matrix;
+							displayObject.transform.colorTransform = oldObject.transform.colorTransform;
+							displayObject.filters = oldObject.filters;
 							addChildAt (displayObject, frameObject.depth);
 							__objects.set (frameObject.id, displayObject);
 						}
