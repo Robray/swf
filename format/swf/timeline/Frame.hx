@@ -71,6 +71,7 @@ class Frame
 					// The character id does not match the previous character:
 					// An entirely new character is placed at this depth.
 					frameObject.characterId = tag.characterId;
+					frameObject.lastModifiedAtIndex = tagIndex;
 				}
 			}
 		} else {
