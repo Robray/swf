@@ -168,7 +168,7 @@ import openfl.Assets;
 	public function serialize ():String {
 		
 		var serializer = new Serializer ();
-		serializer.useCache = true;
+//		serializer.useCache = true;
 		serializer.serialize (this);
 		return serializer.toString ();
 		
