@@ -23,8 +23,9 @@ import openfl.Assets;
 	public var frameRate:Float;
 	public var root:SpriteSymbol;
 	public var symbols:Map <Int, SWFSymbol>;
-	
-	
+	public var symbolClassNames:Map <String, SWFSymbol>;
+
+
 	public function new () {
 		
 		symbols = new Map <Int, SWFSymbol> ();
@@ -48,17 +49,15 @@ import openfl.Assets;
 			return new MovieClip (this, root);
 			
 		} else {
-			
-			for (symbol in symbols) {
-				
-				if (symbol.className == className) {
-					
-					if (Std.is (symbol, SpriteSymbol)) {
-						
-						return new MovieClip (this, cast symbol);
-						
-					}
-					
+
+			var symbol = symbolClassNames.get(className);
+
+			if (symbol != null) {
+
+				if (Std.is (symbol, SpriteSymbol)) {
+
+					return new MovieClip (this, cast symbol);
+
 				}
 				
 			}
@@ -71,18 +70,16 @@ import openfl.Assets;
 	
 	
 	public function getBitmapData (className:String):BitmapData {
-		
-		for (symbol in symbols) {
-			
-			if (symbol.className == className) {
-				
-				if (Std.is (symbol, BitmapSymbol)) {
-					
-					var bitmap:BitmapSymbol = cast symbol;
-					return Assets.getBitmapData (bitmap.path);
-					
-				}
-				
+
+		var symbol = symbolClassNames.get(className);
+
+		if (symbol != null) {
+
+			if (Std.is (symbol, BitmapSymbol)) {
+
+				var bitmap:BitmapSymbol = cast symbol;
+				return Assets.getBitmapData (bitmap.path);
+
 			}
 			
 		}
@@ -93,19 +90,9 @@ import openfl.Assets;
 	
 	
 	public function hasSymbol (className:String):Bool {
-		
-		for (symbol in symbols) {
-			
-			if (symbol.className == className) {
-				
-				return true;
-				
-			}
-			
-		}
-		
-		return false;
-		
+
+		return symbolClassNames.exists(className);
+
 	}
 	
 	
@@ -169,9 +156,22 @@ import openfl.Assets;
 		
 		var serializer = new Serializer ();
 //		serializer.useCache = true;
+		symbolClassNames = null;
 		serializer.serialize (this);
 		return serializer.toString ();
-		
+
+	}
+
+	private function cacheSymbolClassNames () {
+
+		symbolClassNames = new Map();
+
+		for (symbol in symbols) {
+			if (symbol.className != null) {
+				symbolClassNames.set(symbol.className, symbol);
+			}
+		}
+
 	}
 	
 	
@@ -185,9 +185,10 @@ import openfl.Assets;
 		
 		var unserializer = new Unserializer (data);
 		unserializer.setResolver ({ resolveClass: resolveClass, resolveEnum: resolveEnum });
-		
-		return cast unserializer.unserialize ();
-		
+
+		var swf_lite:SWFLite = cast unserializer.unserialize ();
+		swf_lite.cacheSymbolClassNames();
+		return swf_lite;
 	}
 	
 	
