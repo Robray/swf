@@ -62,8 +62,8 @@ class MovieClip extends flash.display.MovieClip {
 		
 		__swf = swf;
 		__symbol = symbol;
-		
-		__lastUpdate = -1;
+
+		__lastUpdate = 1;
 		__objects = new Map ();
 		__zeroSymbol = -1;
 		
@@ -82,8 +82,13 @@ class MovieClip extends flash.display.MovieClip {
 			
 		}
 
-		__updateFrame ();
-		
+		__renderFrame (0);
+
+		#if (!flash && openfl && !openfl_legacy)
+		__renderDirty = true;
+		DisplayObject.__worldRenderDirty++;
+		#end
+
 		if (__totalFrames > 1) {
 			
 			#if flash
@@ -226,8 +231,8 @@ class MovieClip extends flash.display.MovieClip {
 
 	
 	public function unflatten ():Void {
-		
-		__lastUpdate = -1;
+
+		__lastUpdate = 0;
 		__updateFrame ();
 		
 	}
@@ -594,148 +599,146 @@ class MovieClip extends flash.display.MovieClip {
 	
 	
 	@:noCompletion private function __renderFrame (index:Int):Void {
-		
-		
-		var previousIndex = __lastUpdate;
-		if (previousIndex > index) {
-			
+
+		if (index == 0) {
 
 			__objects = new Map();
 			removeChildren(0, numChildren);
-			previousIndex = 0;
-			
 		}
 		
 		var frame, displayObject, depth;
 		var mask = null, maskObject = null;
-		
-		for (i in previousIndex...(index + 1)) {
-			
-			if (i < 0) continue;
-			
-			frame = __symbol.frames[i];
-			
-			for (frameObject in frame.objects) {
-				
-				if (frameObject.type != FrameObjectType.DESTROY) {
-					
-					if (frameObject.id == 0 && frameObject.symbol != __zeroSymbol) {
-						
-						displayObject = __objects.get (0);
-						
-						if (displayObject != null && displayObject.parent == this) {
-							
-							removeChild (displayObject);
-							
-						}
-						
-						__objects.remove (0);
-						displayObject = null;
-						__zeroSymbol = frameObject.symbol;
-						
+
+		frame = __symbol.frames[index];
+
+		for (frameObject in frame.objects) {
+
+			if (frameObject.type != FrameObjectType.DESTROY) {
+
+				if (frameObject.id == 0 && frameObject.symbol != __zeroSymbol) {
+
+					displayObject = __objects.get (0);
+
+					if (displayObject != null && displayObject.parent == this) {
+
+						removeChild (displayObject);
+
 					}
-					
-					if (!__objects.exists (frameObject.id)) {
-						
-						displayObject = __createObject (frameObject);
-						
-						if (displayObject != null) {
-							
 
-							addChildAt (displayObject, frameObject.depth);
-							__objects.set (frameObject.id, displayObject);
-							
-						}
-						
-					} else {
-						
-						displayObject = __objects.get (frameObject.id);
-						
-						if( frameObject.type == FrameObjectType.UPDATE_CHARACTER ){
+					__objects.remove (0);
+					displayObject = null;
+					__zeroSymbol = frameObject.symbol;
 
-							var oldObject : DisplayObject = displayObject;
-							removeChild(displayObject);
+				}
 
-							displayObject = __createObject (frameObject);
-							displayObject.name = oldObject.name;
-							displayObject.transform.matrix = oldObject.transform.matrix;
-							displayObject.transform.colorTransform = oldObject.transform.colorTransform;
-							displayObject.filters = oldObject.filters;
-							addChildAt (displayObject, frameObject.depth);
-							__objects.set (frameObject.id, displayObject);
-						}
-					}
-					
+				if (!__objects.exists (frameObject.id)) {
+
+					displayObject = __createObject (frameObject);
+
 					if (displayObject != null) {
-						
-						__placeObject (displayObject, frameObject);
-						
-						if (mask != null) {
-							
-							if (mask.clipDepth < frameObject.depth) {
-								
-								mask = null;
-								
-							} else {
-								
-								displayObject.mask = maskObject;
-								
-							}
-							
+
+						addChildAt (displayObject, frameObject.depth);
+
+						__objects.set (frameObject.id, displayObject);
+
+					}
+
+				} else {
+
+					displayObject = __objects.get (frameObject.id);
+
+					if( frameObject.type == FrameObjectType.UPDATE_CHARACTER ){
+
+						var oldObject : DisplayObject = displayObject;
+						removeChild(displayObject);
+
+						displayObject = __createObject (frameObject);
+
+						displayObject.name = oldObject.name;
+						displayObject.transform.matrix = oldObject.transform.matrix;
+						displayObject.transform.colorTransform = oldObject.transform.colorTransform;
+						displayObject.filters = oldObject.filters;
+
+						addChildAt (displayObject, frameObject.depth);
+						__objects.set (frameObject.id, displayObject);
+					}
+
+				}
+
+				if (displayObject != null) {
+
+					__placeObject (displayObject, frameObject);
+
+					if (mask != null) {
+
+						if (mask.clipDepth < frameObject.depth) {
+
+							mask = null;
+
 						} else {
 
-							// :TODO: check for side effects, better keep a list of mask and depth
-							//displayObject.mask = null;
+							displayObject.mask = maskObject;
 
 						}
-						
-						if (frameObject.clipDepth != 0 #if neko && frameObject.clipDepth != null #end) {
-							
-							mask = frameObject;
-							displayObject.visible = false;
-							maskObject = displayObject;
-							
-						}
-						
+
+					} else {
+
+						// :TODO: check for side effects, better keep a list of mask and depth
+						//displayObject.mask = null;
+
 					}
-					
-				} else {
-					
-					if (__objects.exists (frameObject.id)) {
-						
-						displayObject = __objects.get (frameObject.id);
-						
-						if (displayObject != null && displayObject.parent == this) {
-							
-							removeChild (displayObject);
-							
-						}
-						
-						__objects.remove (frameObject.id);
-						
+
+					if (frameObject.clipDepth != 0 #if neko && frameObject.clipDepth != null #end) {
+
+						mask = frameObject;
+						displayObject.visible = false;
+						maskObject = displayObject;
+
 					}
-					
+
 				}
-				
+
+			} else {
+
+				if (__objects.exists (frameObject.id)) {
+
+					displayObject = __objects.get (frameObject.id);
+
+					if (displayObject != null && displayObject.parent == this) {
+
+						removeChild (displayObject);
+
+					}
+
+					__objects.remove (frameObject.id);
+
+				}
+
 			}
-			
+
 		}
-		
+
 	}
 	
 	
 	@:noCompletion private function __updateFrame ():Void {
 		
 		if (__currentFrame != __lastUpdate) {
-			
-			var frameIndex = __currentFrame - 1;
-			
-			if (frameIndex > -1) {
-				
-				__renderFrame (frameIndex);
-				
+
+			if( __currentFrame < __lastUpdate ){
+				for( frameIndex in ( __lastUpdate ... __totalFrames ) ){
+					__renderFrame (frameIndex);
+				}
+				for( frameIndex in ( 0 ... __currentFrame ) ){
+					__renderFrame (frameIndex);
+				}
+			} else {
+
+				for( frameIndex in ( __lastUpdate ... __currentFrame ) ){
+					__renderFrame (frameIndex);
+				}
 			}
-			
+
 			#if (!flash && openfl && !openfl_legacy)
 			__renderDirty = true;
 			DisplayObject.__worldRenderDirty++;
