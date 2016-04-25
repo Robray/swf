@@ -607,7 +607,6 @@ class MovieClip extends flash.display.MovieClip {
 		}
 		
 		var frame, displayObject, depth;
-		var mask = null, maskObject = null;
 
 		frame = __symbol.frames[index];
 
@@ -658,6 +657,7 @@ class MovieClip extends flash.display.MovieClip {
 						displayObject.transform.matrix = oldObject.transform.matrix;
 						displayObject.transform.colorTransform = oldObject.transform.colorTransform;
 						displayObject.filters = oldObject.filters;
+						displayObject.__clipDepth = oldObject.__clipDepth;
 
 						addChildAt (displayObject, frameObject.depth);
 						__objects.set (frameObject.id, displayObject);
@@ -669,31 +669,10 @@ class MovieClip extends flash.display.MovieClip {
 
 					__placeObject (displayObject, frameObject);
 
-					if (mask != null) {
-
-						if (mask.clipDepth < frameObject.depth) {
-
-							mask = null;
-
-						} else {
-
-							displayObject.mask = maskObject;
-
-						}
-
-					} else {
-
-						// :TODO: check for side effects, better keep a list of mask and depth
-						//displayObject.mask = null;
-
-					}
-
 					if (frameObject.clipDepth != 0 #if neko && frameObject.clipDepth != null #end) {
 
-						mask = frameObject;
 						displayObject.visible = false;
-						maskObject = displayObject;
-
+						displayObject.__clipDepth = frameObject.clipDepth - frameObject.depth;
 					}
 
 				}
