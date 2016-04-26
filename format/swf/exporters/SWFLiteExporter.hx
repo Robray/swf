@@ -439,8 +439,14 @@ class SWFLiteExporter {
 			
 			symbol.id = untyped tag.characterId;
 			
+			var grid = tag.getScalingGrid (symbol.id);
+			if (grid != null) {
+				symbol.scalingGridRect = grid.splitter.rect.clone ();
+				
+			}
 		}
 		
+
 		var instances = new Array<Int> ();
 		var lastModified = new Map<Int, Int> ();
 		var zeroCharacter = -1;

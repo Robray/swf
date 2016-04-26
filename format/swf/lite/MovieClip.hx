@@ -21,7 +21,10 @@ import format.swf.lite.timeline.FrameObjectType;
 import format.swf.lite.SWFLite;
 import openfl.display.BitmapDataChannel;
 import openfl.display.FrameLabel;
+import openfl.geom.Matrix;
 import openfl.geom.Point;
+import openfl.geom.Rectangle;
+import openfl._internal.renderer.RenderSession;
 
 #if openfl
 import openfl.Assets;
@@ -47,6 +50,7 @@ class MovieClip extends flash.display.MovieClip {
 	@:noCompletion private var __symbol:SpriteSymbol;
 	@:noCompletion private var __timeElapsed:Int;
 	@:noCompletion private var __zeroSymbol:Int;
+	@:noCompletion private var __drawingBitmapData:Bool;
 	
 	#if flash
 	@:noCompletion private var __currentFrame:Int;
@@ -55,7 +59,8 @@ class MovieClip extends flash.display.MovieClip {
 	@:noCompletion private var __currentLabels:Array<FrameLabel>;
 	#end
 	
-	
+	private var __9SliceBitmap:BitmapData;
+
 	public function new (swf:SWFLite, symbol:SpriteSymbol) {
 		
 		super ();
@@ -66,7 +71,8 @@ class MovieClip extends flash.display.MovieClip {
 		__lastUpdate = 1;
 		__objects = new Map ();
 		__zeroSymbol = -1;
-		
+		__drawingBitmapData = false;
+
 		__currentFrame = 1;
 		__totalFrames = __symbol.frames.length;
 		
@@ -597,6 +603,68 @@ class MovieClip extends flash.display.MovieClip {
 		
 	}
 	
+	public override function __update (transformOnly:Bool, updateChildren:Bool, ?maskGraphics:Graphics = null):Void {
+		super.__update(transformOnly, updateChildren, maskGraphics);
+		
+		// :TODO: should be in a prerender phase
+		// :TODO: use dirty flag if need to update __9SliceBitmap
+
+		if (__symbol.scalingGridRect != null && __9SliceBitmap == null) {
+				var bounds:Rectangle = new Rectangle();
+				__getRenderBounds(bounds, @:privateAccess Matrix.__identity);
+				
+				if (bounds.width <= 0 && bounds.height <= 0) {
+					throw 'Error creating a cached bitmap. The texture size is ${bounds.width}x${bounds.height}';
+				}
+
+				__9SliceBitmap = new BitmapData (Math.ceil(bounds.width), Math.ceil(bounds.height));
+				__drawingBitmapData = true;
+				__9SliceBitmap.draw (this);
+				__drawingBitmapData = false;
+		}
+	}
+
+	@:noCompletion private function drawScale9Bitmap(renderSession:RenderSession, bitmap:BitmapData, drawWidth:Float, drawHeight:Float, scale9Rect:Rectangle):Void {
+
+		var matrix = new Matrix();
+		var cols = [0, scale9Rect.left, drawWidth - (bitmap.width - scale9Rect.right), drawWidth];
+		var rows = [0, scale9Rect.top, drawHeight - (bitmap.height - scale9Rect.bottom), drawHeight];
+		var us = [0, scale9Rect.left / bitmap.width, scale9Rect.right / bitmap.width, 1];
+		var vs = [0, scale9Rect.top / bitmap.height, scale9Rect.bottom/ bitmap.height, 1];
+		var uvs:TextureUvs = new TextureUvs();
+
+		for(row in 0...3) {
+			for(col in 0...3) {
+
+				var sourceX = cols[col];
+				var sourceY = rows[row];
+				var w = cols[col+1] - cols[col];
+				var h = rows[row+1] - rows[row];
+				
+				matrix.identity();
+				matrix.translate(sourceX + __worldTransform.tx, sourceY + __worldTransform.ty);
+
+				uvs.x0 = uvs.x3 = us[col];
+				uvs.x1 = uvs.x2 = us[col+1];
+				uvs.y0 = uvs.y1 = vs[row];
+				uvs.y2 = uvs.y3 = vs[row+1];
+
+				renderSession.spriteBatch.renderBitmapDataEx(__9SliceBitmap, w, h, uvs, true, matrix, __worldColorTransform, __worldColorTransform.alphaMultiplier, __blendMode, __shader, null);
+
+			}
+		}
+	}
+	
+	public override function __renderGL (renderSession:RenderSession):Void {
+		if (!__drawingBitmapData && __symbol.scalingGridRect != null) {
+			if (!__renderable || __worldAlpha <= 0) return;
+
+			drawScale9Bitmap(renderSession, __9SliceBitmap, width, height ,__symbol.scalingGridRect);
+		}
+		else {
+			super.__renderGL (renderSession);
+		}
+	}
 	
 	@:noCompletion private function __renderFrame (index:Int):Void {
 

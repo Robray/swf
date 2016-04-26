@@ -8,7 +8,7 @@ class SpriteSymbol extends SWFSymbol {
 	
 	
 	public var frames:Array<Frame>;
-	
+	public var scalingGridRect:flash.geom.Rectangle;
 	
 	public function new () {
 		
