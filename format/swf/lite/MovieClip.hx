@@ -617,9 +617,11 @@ class MovieClip extends flash.display.MovieClip {
 					throw 'Error creating a cached bitmap. The texture size is ${bounds.width}x${bounds.height}';
 				}
 
-				__9SliceBitmap = new BitmapData (Math.ceil(bounds.width), Math.ceil(bounds.height));
+				var matrix:Matrix = new Matrix();
+				matrix.translate(-bounds.x, -bounds.y);
+				__9SliceBitmap = new BitmapData (Math.ceil(bounds.width), Math.ceil(bounds.height), true, 0);
 				__drawingBitmapData = true;
-				__9SliceBitmap.draw (this);
+				__9SliceBitmap.draw (this, matrix);
 				__drawingBitmapData = false;
 		}
 	}
