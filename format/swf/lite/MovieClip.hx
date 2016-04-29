@@ -635,6 +635,10 @@ class MovieClip extends flash.display.MovieClip {
 		var vs = [0, scale9Rect.top / bitmap.height, scale9Rect.bottom/ bitmap.height, 1];
 		var uvs:TextureUvs = new TextureUvs();
 
+		var bitmapDataUvs = @:privateAccess bitmap.__uvData;
+		var u_scale = bitmapDataUvs.x1 - bitmapDataUvs.x0;
+		var v_scale = bitmapDataUvs.y2 - bitmapDataUvs.y0;
+
 		for(row in 0...3) {
 			for(col in 0...3) {
 
@@ -646,10 +650,10 @@ class MovieClip extends flash.display.MovieClip {
 				matrix.identity();
 				matrix.translate(sourceX + __worldTransform.tx, sourceY + __worldTransform.ty);
 
-				uvs.x0 = uvs.x3 = us[col];
-				uvs.x1 = uvs.x2 = us[col+1];
-				uvs.y0 = uvs.y1 = vs[row];
-				uvs.y2 = uvs.y3 = vs[row+1];
+				uvs.x0 = uvs.x3 = us[col] * u_scale;
+				uvs.x1 = uvs.x2 = us[col+1] * u_scale;
+				uvs.y0 = uvs.y1 = vs[row] * v_scale;
+				uvs.y2 = uvs.y3 = vs[row+1] * v_scale;
 
 				renderSession.spriteBatch.renderBitmapDataEx(__9SliceBitmap, w, h, uvs, true, matrix, __worldColorTransform, __worldColorTransform.alphaMultiplier, __blendMode, __shader, null);
 
