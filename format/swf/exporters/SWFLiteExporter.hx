@@ -46,6 +46,11 @@ import haxe.io.Bytes;
 import haxe.io.BytesOutput;
 import lime.graphics.format.JPEG;
 import openfl.display.PNGEncoderOptions;
+import lime.graphics.Image;
+import lime.graphics.ImageBuffer;
+import lime.utils.UInt8Array;
+import lime.math.Vector2;
+import lime.math.color.RGBA;
 
 
 class SWFLiteExporter {
@@ -59,12 +64,14 @@ class SWFLiteExporter {
 	
 	private var alphaPalette:Bytes;
 	private var data:SWFRoot;
-	
+	private var mergeAlphaChannel:Bool;
 
-	public function new (data:SWFRoot) {
-		
+
+	public function new (data:SWFRoot, mergeAlphaChannel:Bool) {
+
 		this.data = data;
-		
+		this.mergeAlphaChannel = mergeAlphaChannel;
+
 		bitmapAlpha = new Map <Int, ByteArray> ();
 		bitmaps = new Map <Int, ByteArray> ();
 		bitmapTypes = new Map <Int, BitmapType> ();
@@ -280,53 +287,84 @@ class SWFLiteExporter {
 				var alpha = cast (tag, TagDefineBitsJPEG3).bitmapAlphaData;
 				alpha.uncompress ();
 				alpha.position = 0;
-				
-				if (alphaPalette == null) {
-					
-					alphaPalette = Bytes.alloc (256 * 3);
-					var index = 0;
-					
-					for (i in 0...256) {
-						
-						alphaPalette.set (index++, i);
-						alphaPalette.set (index++, i);
-						alphaPalette.set (index++, i);
-						
+
+				var image = lime.graphics.format.JPEG.decodeBytes (data.bitmapData, mergeAlphaChannel);
+
+				if( mergeAlphaChannel ){
+					var width = image.width;
+					var height = image.height;
+
+					/* If copy channel supported 8bit texture, does not
+					var alphaBuffer = new ImageBuffer( UInt8Array.fromBytes(alpha), width, height, 8 );
+					var alphaImage = new Image(alphaBuffer);
+
+					image.transparent = true;
+					image.copyChannel (alphaImage, alphaImage.rect, new Vector2 (), RED, ALPHA);
+					*/
+
+					var pixel : RGBA;
+					var srcPosition = 0;
+					var srcData = image.buffer.data;
+
+					for( j in 0 ... height ){
+						for( i in 0 ... width ){
+
+							pixel.readUInt8(srcData, srcPosition * 4);
+							pixel.a = alpha[srcPosition];
+							pixel.writeUInt8(srcData, srcPosition * 4);
+							srcPosition += 1;
+						}
 					}
-					
+
+					alphaByteArray = null;
+					byteArray = lime.graphics.format.PNG.encode( image );
+
+					type = BitmapType.PNG;
+
+				} else {
+
+					if (alphaPalette == null) {
+
+						alphaPalette = Bytes.alloc (256 * 3);
+						var index = 0;
+
+						for (i in 0...256) {
+
+							alphaPalette.set (index++, i);
+							alphaPalette.set (index++, i);
+							alphaPalette.set (index++, i);
+
+						}
+					}
+
+					var values = Bytes.alloc ((image.width + 1) * image.height);
+					var index = 0;
+
+					for (y in 0...image.height) {
+
+						values.set (index++, 0);
+						values.blit (index, alpha, alpha.position, image.width);
+						index += image.width;
+						alpha.position += image.width;
+
+					}
+
+					var png = new List ();
+					png.add (CHeader ( { width: image.width, height: image.height, colbits: 8, color: ColIndexed, interlaced: false } ));
+					png.add (CPalette (alphaPalette));
+					png.add (CData (Deflate.run (values)));
+					png.add (CEnd);
+
+					var output = new BytesOutput ();
+					var writer = new Writer (output);
+					writer.write (png);
+
+					alphaByteArray = ByteArray.fromBytes (output.getBytes ());
+					byteArray = data.bitmapData;
+					type = BitmapType.JPEG_ALPHA;
+
 				}
-				
-				var tempFile = lime.tools.helpers.PathHelper.getTemporaryFile ("jpg");
-				sys.io.File.saveBytes (tempFile, data.bitmapData);
-				var image = lime.graphics.format.JPEG.decodeFile (tempFile, false);
-				try { sys.FileSystem.deleteFile (tempFile); } catch (e:Dynamic) {}
-				
-				var values = Bytes.alloc ((image.width + 1) * image.height);
-				var index = 0;
-				
-				for (y in 0...image.height) {
-					
-					values.set (index++, 0);
-					values.blit (index, alpha, alpha.position, image.width);
-					index += image.width;
-					alpha.position += image.width;
-					
-				}
-				
-				var png = new List ();
-				png.add (CHeader ( { width: image.width, height: image.height, colbits: 8, color: ColIndexed, interlaced: false } ));
-				png.add (CPalette (alphaPalette));
-				png.add (CData (Deflate.run (values)));
-				png.add (CEnd);
-				
-				var output = new BytesOutput ();
-				var writer = new Writer (output);
-				writer.write (png);
-				
-				alphaByteArray = ByteArray.fromBytes (output.getBytes ());
-				byteArray = data.bitmapData;
-				type = BitmapType.JPEG_ALPHA;
-				
+
 			} else {
 				
 				byteArray = data.bitmapData;
