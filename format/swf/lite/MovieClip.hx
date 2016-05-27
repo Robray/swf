@@ -61,6 +61,8 @@ class MovieClip extends flash.display.MovieClip {
 	
 	private var __9SliceBitmap:BitmapData;
 
+	private var __SWFDepthData:Map<DisplayObject, Int>;
+
 	public function new (swf:SWFLite, symbol:SpriteSymbol) {
 		
 		super ();
@@ -75,7 +77,9 @@ class MovieClip extends flash.display.MovieClip {
 
 		__currentFrame = 1;
 		__totalFrames = __symbol.frames.length;
-		
+
+		__SWFDepthData = new Map();
+
 		__currentLabels = [];
 		
 		for (i in 0...__symbol.frames.length) {
@@ -695,6 +699,7 @@ class MovieClip extends flash.display.MovieClip {
 					if (displayObject != null && displayObject.parent == this) {
 
 						removeChild (displayObject);
+						__SWFDepthData.remove(displayObject);
 
 					}
 
@@ -710,8 +715,7 @@ class MovieClip extends flash.display.MovieClip {
 
 					if (displayObject != null) {
 
-						addChildAt (displayObject, frameObject.depth);
-
+						__addChildAtSwfDepth (displayObject, frameObject.depth);
 						__objects.set (frameObject.id, displayObject);
 
 					}
@@ -733,7 +737,7 @@ class MovieClip extends flash.display.MovieClip {
 						displayObject.filters = oldObject.filters;
 						displayObject.__clipDepth = oldObject.__clipDepth;
 
-						addChildAt (displayObject, frameObject.depth);
+						__addChildAtSwfDepth (displayObject, frameObject.depth);
 						__objects.set (frameObject.id, displayObject);
 					}
 
@@ -760,6 +764,7 @@ class MovieClip extends flash.display.MovieClip {
 					if (displayObject != null && displayObject.parent == this) {
 
 						removeChild (displayObject);
+						__SWFDepthData.remove(displayObject);
 
 					}
 
@@ -802,10 +807,25 @@ class MovieClip extends flash.display.MovieClip {
 		__lastUpdate = __currentFrame;
 		
 	}
-	
-	
-	
-	
+
+	@:noCompletion private function __addChildAtSwfDepth(displayObject: DisplayObject, targetDepth:Int):Void{
+
+		__SWFDepthData.set(displayObject, targetDepth);
+
+		for( i in 0 ... numChildren ){
+			if( __SWFDepthData.get(getChildAt(i)) > targetDepth){
+				addChildAt (displayObject, i);
+
+				return;
+			}
+		}
+
+		addChild (displayObject);
+	}
+
+
+
+
 	// Get & Set Methods
 	
 	
