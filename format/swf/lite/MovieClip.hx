@@ -62,6 +62,7 @@ class MovieClip extends flash.display.MovieClip {
 	private var __9SliceBitmap:BitmapData;
 
 	private var __SWFDepthData:Map<DisplayObject, Int>;
+	private var __maskData:Map<DisplayObject, Int>;
 
 	public function new (swf:SWFLite, symbol:SpriteSymbol) {
 		
@@ -79,6 +80,7 @@ class MovieClip extends flash.display.MovieClip {
 		__totalFrames = __symbol.frames.length;
 
 		__SWFDepthData = new Map();
+		__maskData = new Map();
 
 		__currentLabels = [];
 		
@@ -682,6 +684,8 @@ class MovieClip extends flash.display.MovieClip {
 
 			__objects = new Map();
 			removeChildren(0, numChildren);
+			__SWFDepthData = new Map();
+			__maskData = new Map();
 		}
 		
 		var frame, displayObject, depth;
@@ -700,6 +704,7 @@ class MovieClip extends flash.display.MovieClip {
 
 						removeChild (displayObject);
 						__SWFDepthData.remove(displayObject);
+						__maskData.remove(displayObject);
 
 					}
 
@@ -727,6 +732,10 @@ class MovieClip extends flash.display.MovieClip {
 					if( frameObject.type == FrameObjectType.UPDATE_CHARACTER ){
 
 						var oldObject : DisplayObject = displayObject;
+
+						var clipDepth = __maskData.get(displayObject);
+						__maskData.remove(displayObject);
+						__SWFDepthData.remove(displayObject);
 						removeChild(displayObject);
 
 						displayObject = __createObject (frameObject);
@@ -735,7 +744,10 @@ class MovieClip extends flash.display.MovieClip {
 						displayObject.transform.matrix = oldObject.transform.matrix;
 						displayObject.transform.colorTransform = oldObject.transform.colorTransform;
 						displayObject.filters = oldObject.filters;
-						displayObject.__clipDepth = oldObject.__clipDepth;
+
+						if( clipDepth != null ) {
+							__maskData.set( displayObject, clipDepth );
+						}
 
 						__addChildAtSwfDepth (displayObject, frameObject.depth);
 						__objects.set (frameObject.id, displayObject);
@@ -750,7 +762,8 @@ class MovieClip extends flash.display.MovieClip {
 					if (frameObject.clipDepth != 0 #if neko && frameObject.clipDepth != null #end) {
 
 						displayObject.visible = false;
-						displayObject.__clipDepth = frameObject.clipDepth - frameObject.depth;
+
+						__maskData.set( displayObject, frameObject.clipDepth );
 					}
 
 				}
@@ -765,6 +778,7 @@ class MovieClip extends flash.display.MovieClip {
 
 						removeChild (displayObject);
 						__SWFDepthData.remove(displayObject);
+						__maskData.remove(displayObject);
 
 					}
 
@@ -774,6 +788,23 @@ class MovieClip extends flash.display.MovieClip {
 
 			}
 
+		}
+
+		for( mask in __maskData.keys() ){
+			var maskIndex = getChildIndex( mask );
+
+			var depthValue = __maskData.get(mask);
+
+			var result = numChildren;
+			for( i in maskIndex ... numChildren ){
+				var sibling = getChildAt(i);
+				if( __SWFDepthData.get(sibling) > depthValue){
+					result = i;
+					break;
+				}
+			}
+
+			mask.__clipDepth = result - maskIndex - 1;
 		}
 
 	}
