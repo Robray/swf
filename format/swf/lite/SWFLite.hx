@@ -19,7 +19,8 @@ import openfl.Assets;
 	
 	
 	public static var instances = new Map<String, SWFLite> ();
-	
+	public static var classes = new Map<String, Class<Dynamic>>();
+
 	public var frameRate:Float;
 	public var root:SpriteSymbol;
 	public var symbols:Map <Int, SWFSymbol>;
