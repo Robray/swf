@@ -406,10 +406,12 @@ class MovieClip extends flash.display.MovieClip {
 						__currentFrame = 1;
 						
 					}
-					
-					if (__frameScripts.exists (__currentFrame - 1)) {
-						
-						__frameScripts.get (__currentFrame - 1) ();
+
+					var currentScriptFrame = __currentFrame - 1;
+
+					if (__frameScripts.exists (currentScriptFrame)) {
+						__currentLabel = __symbol.frames[currentScriptFrame].label;
+						__frameScripts.get (currentScriptFrame) ();
 						if (!__playing) break;
 						
 					}
