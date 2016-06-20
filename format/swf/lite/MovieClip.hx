@@ -580,7 +580,11 @@ class MovieClip extends flash.display.MovieClip {
 		if (frameObject.colorTransform != null) {
 			
 			displayObject.transform.colorTransform = frameObject.colorTransform;
-			
+
+		}
+
+		if (frameObject.blendMode != null) {
+			displayObject.blendMode = frameObject.blendMode;
 		}
 		
 		if (frameObject.filters != null) {

@@ -570,7 +570,11 @@ class SWFLiteExporter {
 					frameObject.colorTransform = placeTag.colorTransform.colorTransform;
 					
 				}
-				
+
+				if( placeTag.hasBlendMode) {
+					frameObject.blendMode = format.swf.data.consts.BlendMode.toString(placeTag.blendMode);
+				}
+
 				if (placeTag.hasFilterList) {
 					
 					var filters:Array<FilterType> = [];
