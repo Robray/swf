@@ -55,6 +55,13 @@ import openfl.Assets;
 
 			if (symbol != null) {
 
+				var _class: Class<Dynamic> = SWFLite.classes.get(symbol.className);
+
+				if( _class != null )
+				{
+					return Type.createInstance( _class, [this, symbol]);
+				}
+
 				if (Std.is (symbol, SpriteSymbol)) {
 
 					return new MovieClip (this, cast symbol);
