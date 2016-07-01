@@ -91,10 +91,8 @@ class MovieClip extends flash.display.MovieClip {
 				__currentLabels.push (new FrameLabel (__symbol.frames[i].label, i + 1));
 				
 			}
-			
-		}
 
-		__renderFrame (0);
+		}
 
 		#if (!flash && openfl && !openfl_legacy)
 		__renderDirty = true;
@@ -112,7 +110,9 @@ class MovieClip extends flash.display.MovieClip {
 			#end
 			
 		}
-		
+
+		__renderFrame (0);
+
 	}
 	
 	
@@ -393,43 +393,13 @@ class MovieClip extends flash.display.MovieClip {
 			#else
 			var advanceFrames = (__lastUpdate == __currentFrame) ? 1 : 0;
 			#end
-			
-			#if (!flash && openfl && !openfl_legacy)
-			if (__frameScripts != null) {
-				
-				for (i in 0...advanceFrames) {
-					
-					__currentFrame++;
-					
-					if (__currentFrame > __totalFrames) {
-						
-						__currentFrame = 1;
-						
-					}
 
-					var currentScriptFrame = __currentFrame - 1;
+			__currentFrame += advanceFrames;
 
-					if (__frameScripts.exists (currentScriptFrame)) {
-						__currentLabel = __symbol.frames[currentScriptFrame].label;
-						__frameScripts.get (currentScriptFrame) ();
-						if (!__playing) break;
-						
-					}
-					
-				}
-				
-			} else 
-			#end
-			{
-				
-				__currentFrame += advanceFrames;
-				
-				while (__currentFrame > __totalFrames) {
-					
-					__currentFrame -= __totalFrames;
-					
-				}
-				
+			while (__currentFrame > __totalFrames) {
+
+				__currentFrame -= __totalFrames;
+
 			}
 			
 			__updateFrame ();
@@ -823,6 +793,17 @@ class MovieClip extends flash.display.MovieClip {
 			mask.__clipDepth = result - maskIndex - 1;
 		}
 
+		#if (!flash && openfl && !openfl_legacy)
+		if (__frameScripts != null) {
+
+			if (__frameScripts.exists (index)) {
+				__currentLabel = __symbol.frames[index].label;
+				__frameScripts.get (index) ();
+			}
+
+		}
+		#end
+
 	}
 	
 	
@@ -833,14 +814,29 @@ class MovieClip extends flash.display.MovieClip {
 			if( __currentFrame < __lastUpdate ){
 				for( frameIndex in ( __lastUpdate ... __totalFrames ) ){
 					__renderFrame (frameIndex);
+					if (!__playing)
+					{
+						__currentFrame = frameIndex + 1;
+						break;
+					}
 				}
 				for( frameIndex in ( 0 ... __currentFrame ) ){
 					__renderFrame (frameIndex);
+					if (!__playing)
+					{
+						__currentFrame = frameIndex + 1;
+						break;
+					}
 				}
 			} else {
 
 				for( frameIndex in ( __lastUpdate ... __currentFrame ) ){
 					__renderFrame (frameIndex);
+					if (!__playing)
+					{
+						__currentFrame = frameIndex + 1;
+						break;
+					}
 				}
 			}
 
