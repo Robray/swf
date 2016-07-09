@@ -255,7 +255,7 @@ class SWFTimelineContainer extends SWFEventDispatcher
 			var event:SWFWarningEvent = new SWFWarningEvent(eventType, index, eventData, false, true);
 			var cancelled:Bool = !dispatchEvent(event);
 			if (cancelled) {
-				tag = null;
+				//tag = null;
 			}
 			data.position = pos + tagHeader.tagLength;
 		}
