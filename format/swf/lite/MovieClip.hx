@@ -660,8 +660,8 @@ class MovieClip extends flash.display.MovieClip {
 			super.__renderGL (renderSession);
 		}
 	}
-	
-	@:noCompletion private function __renderFrame (index:Int):Void {
+
+	@:noCompletion private function __renderFrame (index:Int):Bool {
 
 		if (index == 0) {
 
@@ -790,48 +790,59 @@ class MovieClip extends flash.display.MovieClip {
 			mask.__clipDepth = result - maskIndex - 1;
 		}
 
+		__currentFrame = index + 1;
+		__lastUpdate = index + 1;
+
 		#if (!flash && openfl && !openfl_legacy)
 		if (__frameScripts != null) {
 
 			if (__frameScripts.exists (index)) {
 				__currentLabel = __symbol.frames[index].label;
 				__frameScripts.get (index) ();
+
+				if(index  + 1 != __currentFrame){
+					return true;
+				}
 			}
 
 		}
 		#end
 
+		return false;
+
 	}
-	
-	
+
+
 	@:noCompletion private function __updateFrame ():Void {
-		
+
 		if (__currentFrame != __lastUpdate) {
 
+			var scriptHasChangedFlow : Bool;
+
 			if( __currentFrame < __lastUpdate ){
+				var cacheCurrentFrame = __currentFrame;
 				for( frameIndex in ( __lastUpdate ... __totalFrames ) ){
-					__renderFrame (frameIndex);
-					if (!__playing)
+					scriptHasChangedFlow = __renderFrame (frameIndex);
+					if (!__playing || scriptHasChangedFlow)
 					{
-						__currentFrame = frameIndex + 1;
 						break;
 					}
 				}
-				for( frameIndex in ( 0 ... __currentFrame ) ){
-					__renderFrame (frameIndex);
-					if (!__playing)
-					{
-						__currentFrame = frameIndex + 1;
-						break;
+				if (__playing){
+					for( frameIndex in ( 0 ... cacheCurrentFrame ) ){
+						scriptHasChangedFlow = __renderFrame (frameIndex);
+						if (!__playing || scriptHasChangedFlow)
+						{
+							break;
+						}
 					}
 				}
 			} else {
 
 				for( frameIndex in ( __lastUpdate ... __currentFrame ) ){
-					__renderFrame (frameIndex);
-					if (!__playing)
+					scriptHasChangedFlow = __renderFrame (frameIndex);
+					if (!__playing || scriptHasChangedFlow)
 					{
-						__currentFrame = frameIndex + 1;
 						break;
 					}
 				}
@@ -841,11 +852,9 @@ class MovieClip extends flash.display.MovieClip {
 			__renderDirty = true;
 			DisplayObject.__worldRenderDirty++;
 			#end
-			
+
 		}
-		
-		__lastUpdate = __currentFrame;
-		
+
 	}
 
 	@:noCompletion private function __addChildAtSwfDepth(displayObject: DisplayObject, targetDepth:Int):Void{
