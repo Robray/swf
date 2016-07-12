@@ -519,10 +519,10 @@ class MovieClip extends flash.display.MovieClip {
 		return 1;
 		
 	}
-	
-	
-	@:noCompletion private function __placeObject (displayObject:DisplayObject, frameObject:FrameObject):Void {
-		
+
+
+	@:noCompletion private function __placeObject (displayObject:DisplayObject, frameObject:FrameObject, update_transform:Bool = true):Void {
+
 		if (frameObject.name != null) {
 			
 			displayObject.name = frameObject.name;
@@ -530,7 +530,8 @@ class MovieClip extends flash.display.MovieClip {
 		}
 		
 		if (frameObject.matrix != null) {
-			
+
+			if ( update_transform == true )
 			displayObject.transform.matrix = frameObject.matrix;
 			
 			var dynamicTextField:DynamicTextField;
@@ -672,6 +673,7 @@ class MovieClip extends flash.display.MovieClip {
 		}
 		
 		var frame, displayObject, depth;
+		var update_transform = true;
 
 		frame = __symbol.frames[index];
 
@@ -710,6 +712,11 @@ class MovieClip extends flash.display.MovieClip {
 
 				} else {
 
+					if( frameObject.type == FrameObjectType.CREATE )
+					{
+						update_transform = false;
+					}
+
 					displayObject = __objects.get (frameObject.id);
 
 					if( frameObject.type == FrameObjectType.UPDATE_CHARACTER ){
@@ -740,7 +747,7 @@ class MovieClip extends flash.display.MovieClip {
 
 				if (displayObject != null) {
 
-					__placeObject (displayObject, frameObject);
+					__placeObject (displayObject, frameObject, update_transform);
 
 					if (frameObject.clipDepth != 0 #if neko && frameObject.clipDepth != null #end) {
 
