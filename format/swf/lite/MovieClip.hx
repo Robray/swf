@@ -660,14 +660,40 @@ class MovieClip extends flash.display.MovieClip {
 		}
 	}
 
+	private function frame0ChildrenUpdate():Void
+	{
+				var frame = __symbol.frames[0];
+				var remove:Bool = true;
+
+				for (frameObject in frame.objects)
+				{
+					if (frameObject.type == FrameObjectType.CREATE)
+					{
+						if(__objects.exists (frameObject.id))
+							remove = false;
+					}
+
+					if(remove)
+					{
+						var displayObject = __objects.get (frameObject.id);
+
+						if(displayObject != null)
+						{
+							removeChild(displayObject);
+
+							__maskData.remove(displayObject);
+							__SWFDepthData.remove(displayObject);
+						}
+
+						__objects.remove(frameObject.id);
+					}
+				}
+	}
+
 	@:noCompletion private function __renderFrame (index:Int):Bool {
 
 		if (index == 0) {
-
-			__objects = new Map();
-			removeChildren(0, numChildren);
-			__SWFDepthData = new Map();
-			__maskData = new Map();
+			frame0ChildrenUpdate();
 		}
 		
 		var frame, displayObject, depth;
