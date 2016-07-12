@@ -95,8 +95,7 @@ class MovieClip extends flash.display.MovieClip {
 		}
 
 		#if (!flash && openfl && !openfl_legacy)
-		__renderDirty = true;
-		DisplayObject.__worldRenderDirty++;
+		__setRenderDirty();
 		#end
 
 		if (__totalFrames > 1) {
@@ -849,8 +848,7 @@ class MovieClip extends flash.display.MovieClip {
 			}
 
 			#if (!flash && openfl && !openfl_legacy)
-			__renderDirty = true;
-			DisplayObject.__worldRenderDirty++;
+			__setRenderDirty();
 			#end
 
 		}
