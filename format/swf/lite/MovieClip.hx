@@ -159,15 +159,16 @@ class MovieClip extends flash.display.MovieClip {
 
 	public override function gotoAndPlay (frame:#if flash flash.utils.Object #else Dynamic #end, scene:String = null):Void {
 
+		play ();
 		__currentFrame = __getFrame (frame);
 		__updateFrame ();
-		play ();
 
 	}
 
 
 	public override function gotoAndStop (frame:#if flash flash.utils.Object #else Dynamic #end, scene:String = null):Void {
 
+		play ();
 		__currentFrame = __getFrame (frame);
 		__updateFrame ();
 		stop ();
