@@ -698,11 +698,6 @@ class MovieClip extends flash.display.MovieClip {
 
 		if (index == 0) {
 			frame0ChildrenUpdate();
-
-			//  __objects = new Map();
-			//  removeChildren(0, numChildren);
-			//  __SWFDepthData = new Map();
-			//  __maskData = new Map();
 		}
 
 		var frame, displayObject, depth;
