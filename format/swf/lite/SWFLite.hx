@@ -16,10 +16,11 @@ import openfl.Assets;
 
 
 @:keep class SWFLite {
-	
-	
+
+
 	public static var instances = new Map<String, SWFLite> ();
 	public static var classes = new Map<String, Class<Dynamic>>();
+	public static var fontAliases = new Map<String, String>();
 
 	public var frameRate:Float;
 	public var root:SpriteSymbol;
