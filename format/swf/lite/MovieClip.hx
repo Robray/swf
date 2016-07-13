@@ -871,7 +871,14 @@ class MovieClip extends flash.display.MovieClip {
 	}
 
 
+	@:noCompletion override private function __releaseResources(){
 
+		if(__9SliceBitmap != null ){
+			__9SliceBitmap.dispose();
+			__9SliceBitmap = null;
+		}
+
+	}
 
 	// Get & Set Methods
 	
