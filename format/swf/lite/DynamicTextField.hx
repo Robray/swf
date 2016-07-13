@@ -54,11 +54,13 @@ class DynamicTextField extends TextField {
 			//format.italic = font.italic;
 			//format.leading = Std.int (font.leading / 20 + (format.size * 0.2) #if flash + 2 #end);
 			//embedFonts = true;
-			
+
 		}
-		
-		format.font = symbol.fontName;
-		
+		format.font = SWFLite.fontAliases.get (symbol.fontName);
+		if (format.font == null) {
+			format.font = symbol.fontName;
+		}
+
 		var found = false;
 		
 		switch (format.font) {
