@@ -491,14 +491,11 @@ class MovieClip extends flash.display.MovieClip {
 	
 	@:noCompletion private function __getFrame (frame:Dynamic):Int {
 		
+		var index:Int = 0;	
+		
 		if (Std.is (frame, Int)) {
-			
-			var index:Int = cast frame;
-			
-			if (index < 1) return 1;
-			if (index > __totalFrames) return __totalFrames;
-			
-			return index;
+
+			index = cast frame;
 			
 		} else if (Std.is (frame, String)) {
 			
@@ -508,16 +505,21 @@ class MovieClip extends flash.display.MovieClip {
 				
 				if (__symbol.frames[i].label == label) {
 					
-					return i;
-					
+					index = i + 1;
+					break;
 				}
 				
 			}
 			
 		}
 		
-		return 1;
+		if(index < 1){
+			index = 1;
+		} else if (index > __totalFrames){
+			index = __totalFrames;
+		}
 		
+		return index;
 	}
 	
 	
