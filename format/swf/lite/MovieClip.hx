@@ -439,11 +439,14 @@ class MovieClip extends flash.display.MovieClip {
 				
 				var alpha = LimeAssets.getImage (symbol.alpha, false);
 				source.copyChannel (alpha, alpha.rect, new Vector2 (), ImageChannel.RED, ImageChannel.ALPHA);
-
-			}
-
-			if (source.transparent) {
+				
+				//symbol.alpha = null;
 				source.buffer.premultiplied = true;
+				
+				#if !sys
+				source.premultiplied = false;
+				#end
+				
 			}
 			
 			#if !flash
