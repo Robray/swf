@@ -255,7 +255,7 @@ class SWFLiteExporter {
 					values.set (index++, 0);
 					values.blit (index, buffer, buffer.position, data.bitmapWidth);
 					index += data.bitmapWidth;
-					buffer.position += data.bitmapWidth;
+					buffer.position += ( data.bitmapWidth + 3 ) & ~3;
 					
 				}
 				
