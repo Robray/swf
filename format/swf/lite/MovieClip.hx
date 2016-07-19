@@ -660,36 +660,38 @@ class MovieClip extends flash.display.MovieClip {
 		}
 	}
 
-	private function frame0ChildrenUpdate():Void
-	{
-				var frame = __symbol.frames[0];
-				var remove:Bool = true;
+	private function frame0ChildrenUpdate():Void {
 
-				for( object_id in __objects.keys() )
-				{
-						for (frameObject in frame.objects)
-						{
-								if( frameObject.id == object_id ){
-										remove = false;
-										break;
-								}
-						}
+		var frame = __symbol.frames[0];
 
-						if(remove)
-						{
-								var displayObject = __objects.get (object_id);
+		for( object_id in __objects.keys() ){
+			
+			var remove:Bool = true;
+			
+			for (frameObject in frame.objects){
+				
+					if( frameObject.id == object_id ){
+						
+							remove = false;
+							break;
+					}
+			}
 
-								if(displayObject != null)
-								{
-										removeChild(displayObject);
+			if(remove){
+				
+					var displayObject = __objects.get (object_id);
 
-										__maskData.remove(displayObject);
-										__SWFDepthData.remove(displayObject);
-								}
+					if(displayObject != null){
+						
+							removeChild(displayObject);
 
-							__objects.remove (object_id);
-						}
-				}
+							__maskData.remove(displayObject);
+							__SWFDepthData.remove(displayObject);
+					}
+
+				__objects.remove (object_id);
+			}
+		}
 	}
 
 	@:noCompletion private function __renderFrame (index:Int):Bool {
