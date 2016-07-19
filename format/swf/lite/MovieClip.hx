@@ -931,6 +931,45 @@ class MovieClip extends flash.display.MovieClip {
 
 	}
 
+	@:noCompletion private function __debugPrintChildren( parentSymbolID: Int = -1 ):Void {
+		
+		var print :Bool = false;
+		if(parentSymbolID < 0 || parentSymbolID == __symbol.id){
+			print = true;
+		}
+		
+		if(print){
+		
+			for( objectID in __objects.keys() ){
+				
+				var object = __objects.get(objectID);
+				
+				var maxNameLength = 20;
+				var objectName = object.name;
+				var isMask = __maskData.exists(object);
+				
+				if(objectName.length < maxNameLength){
+					
+					var spaceNumber = maxNameLength - objectName.length;
+					
+					for (i in 0...spaceNumber){
+						objectName += " ";
+					}
+				}
+				
+				switch (isMask) {
+					
+					case true:
+						trace("parent (" + __symbol.id + ")\t\t\t | " + "mask   \t " + objectName + "\t\t\t | depth = " + __SWFDepthData.get(object) + "\t | mask = " + __maskData.get(object));	
+					case false:
+						trace("parent (" + __symbol.id + ")\t\t\t | " + "object \t " + objectName + "\t\t\t | depth = " + __SWFDepthData.get(object) + "\t |");
+				}
+			}
+			
+			trace("-");
+		}
+	}
+
 	// Get & Set Methods
 
 
