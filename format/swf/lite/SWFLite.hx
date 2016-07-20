@@ -19,9 +19,10 @@ import openfl.Assets;
 
 
 	public static var instances = new Map<String, SWFLite> ();
-	public static var classes = new Map<String, Class<Dynamic>>();
 	public static var fontAliases = new Map<String, String>();
 
+	public var classes : Map<String, Class<Dynamic>>;
+	public var classes_id : Map<Int, Class<Dynamic>>;
 	public var frameRate:Float;
 	public var root:SpriteSymbol;
 	public var symbols:Map <Int, SWFSymbol>;
@@ -31,7 +32,9 @@ import openfl.Assets;
 	public function new () {
 		
 		symbols = new Map <Int, SWFSymbol> ();
-		
+		classes = new Map<String, Class<Dynamic>> ();
+		classes_id = new Map<Int, Class<Dynamic>> ();
+
 		// distinction of symbol by class name and characters by ID somewhere?
 		
 	}
@@ -56,13 +59,21 @@ import openfl.Assets;
 
 			if (symbol != null) {
 
-				var _class: Class<Dynamic> = SWFLite.classes.get(symbol.className);
+				var _class: Class<Dynamic> = classes.get(symbol.className);
 
 				if( _class != null )
 				{
 					return Type.createInstance( _class, [this, symbol]);
 				}
+				else
+				{
+					_class = classes_id.get(cast symbol.id);
 
+					if( _class != null )
+					{
+						return Type.createInstance( _class, [this, symbol]);
+					}
+				}
 				if (Std.is (symbol, SpriteSymbol)) {
 
 					return new MovieClip (this, cast symbol);
@@ -197,6 +208,9 @@ import openfl.Assets;
 
 		var swf_lite:SWFLite = cast unserializer.unserialize ();
 		swf_lite.cacheSymbolClassNames();
+		swf_lite.classes = new Map ();
+		swf_lite.classes_id = new Map ();
+
 		return swf_lite;
 	}
 	

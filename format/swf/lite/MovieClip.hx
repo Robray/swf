@@ -276,7 +276,17 @@ class MovieClip extends flash.display.MovieClip {
 
 			if( symbol.className != null)
 			{
-				var _class: Class<Dynamic> = SWFLite.classes.get(symbol.className);
+				var _class: Class<Dynamic> = __swf.classes.get(symbol.className);
+
+				if( _class != null )
+				{
+					return Type.createInstance( _class, [ __swf, symbol]);
+				}
+			}
+
+			if( __swf.classes_id.exists( object.symbol ))
+			{
+				var _class: Class<Dynamic> = __swf.classes_id.get(object.symbol);
 
 				if( _class != null )
 				{
