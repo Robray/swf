@@ -35,9 +35,9 @@ class StaticTextField extends Shape {
 				if (record.color != null) color = record.color;
 				
 				if (font != null) {
-					
+
 					var scale = (record.fontHeight / 1024) * 0.05;
-					
+
 					var index;
 					var code;
 					

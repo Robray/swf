@@ -33,6 +33,7 @@ import lime.app.Promise;
 		if (id != null) {
 			
 			swf = SWFLite.unserialize (Assets.getText (id));
+			SWFLite.instances.set (id, swf);
 			
 		}
 		
