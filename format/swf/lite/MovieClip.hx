@@ -808,7 +808,7 @@ class MovieClip extends flash.display.MovieClip {
 
 				if (displayObject != null) {
 
-					__placeObject (displayObject, frameObject, update_transform);
+					__placeObject (displayObject, frameObject);
 
 					if (frameObject.clipDepth != 0 #if neko && frameObject.clipDepth != null #end) {
 
