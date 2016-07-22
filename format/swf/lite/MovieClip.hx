@@ -734,6 +734,9 @@ class MovieClip extends flash.display.MovieClip {
 		var update_transform = true;
 
 		frame = __symbol.frames[index];
+		
+		__currentFrame = index + 1;
+		__lastUpdate = index + 1;
 
 		for (frameObject in frame.objects) {
 
@@ -854,9 +857,6 @@ class MovieClip extends flash.display.MovieClip {
 
 			mask.__clipDepth = result - maskIndex - 1;
 		}
-
-		__currentFrame = index + 1;
-		__lastUpdate = index + 1;
 
 		#if (!flash && openfl && !openfl_legacy)
 		if (__frameScripts != null) {
