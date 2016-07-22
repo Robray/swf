@@ -547,7 +547,7 @@ class MovieClip extends flash.display.MovieClip {
 	}
 
 
-	@:noCompletion private function __placeObject (displayObject:DisplayObject, frameObject:FrameObject, update_transform:Bool = true):Void {
+	@:noCompletion private function __placeObject (displayObject:DisplayObject, frameObject:FrameObject):Void {
 
 		if (frameObject.name != null) {
 
@@ -556,22 +556,18 @@ class MovieClip extends flash.display.MovieClip {
 		}
 
 		if (frameObject.matrix != null) {
+		
+			displayObject.transform.matrix = frameObject.matrix;
+			
+			var dynamicTextField:DynamicTextField;
+			
+			if (Std.is (displayObject, DynamicTextField)) {
+				
+				dynamicTextField = cast displayObject;
+				
+				displayObject.x += dynamicTextField.symbol.x;
+				displayObject.y += dynamicTextField.symbol.y #if flash + 4 #end;
 
-			if ( update_transform == true )
-			{
-				displayObject.transform.matrix = frameObject.matrix;
-
-
-				var dynamicTextField:DynamicTextField;
-
-				if (Std.is (displayObject, DynamicTextField)) {
-
-					dynamicTextField = cast displayObject;
-
-					displayObject.x += dynamicTextField.symbol.x;
-					displayObject.y += dynamicTextField.symbol.y #if flash + 4 #end;
-
-				}
 			}
 		}
 
