@@ -37,6 +37,7 @@ import format.swf.tags.TagDefineFont4;
 import format.swf.tags.TagDefineShape;
 import format.swf.tags.TagDefineSprite;
 import format.swf.tags.TagDefineText;
+import format.swf.tags.TagExportAssets;
 import format.swf.tags.TagPlaceObject;
 import format.swf.tags.TagSymbolClass;
 import format.swf.SWFRoot;
@@ -92,8 +93,15 @@ class SWFLiteExporter {
 					
 				}
 				
+			} else if (Std.is (tag, TagExportAssets)) {
+
+				for (symbol in cast (tag, TagExportAssets).symbols) {
+
+					processSymbol (symbol);
+
 			}
 			
+		}
 		}
 		
 	}
@@ -247,7 +255,7 @@ class SWFLiteExporter {
 					values.set (index++, 0);
 					values.blit (index, buffer, buffer.position, data.bitmapWidth);
 					index += data.bitmapWidth;
-					buffer.position += data.bitmapWidth;
+					buffer.position += ( data.bitmapWidth + 3 ) & ~3;
 					
 				}
 				

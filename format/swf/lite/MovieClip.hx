@@ -276,7 +276,17 @@ class MovieClip extends flash.display.MovieClip {
 
 			if( symbol.className != null)
 			{
-				var _class: Class<Dynamic> = SWFLite.classes.get(symbol.className);
+				var _class: Class<Dynamic> = __swf.classes.get(symbol.className);
+
+				if( _class != null )
+				{
+					return Type.createInstance( _class, [ __swf, symbol]);
+				}
+			}
+
+			if( __swf.classes_id.exists( object.symbol ))
+			{
+				var _class: Class<Dynamic> = __swf.classes_id.get(object.symbol);
 
 				if( _class != null )
 				{
@@ -448,11 +458,14 @@ class MovieClip extends flash.display.MovieClip {
 
 				var alpha = LimeAssets.getImage (symbol.alpha, false);
 				source.copyChannel (alpha, alpha.rect, new Vector2 (), ImageChannel.RED, ImageChannel.ALPHA);
-
-			}
-
-			if (source.transparent) {
+				
+				//symbol.alpha = null;
 				source.buffer.premultiplied = true;
+				
+				#if !sys
+				source.premultiplied = false;
+				#end
+				
 			}
 
 			#if !flash
@@ -501,6 +514,8 @@ class MovieClip extends flash.display.MovieClip {
 	@:noCompletion private function __getFrame (frame:Dynamic):Int {
 
 		var index:Int = 0;
+		
+		var index:Int = 0;	
 		
 		if (Std.is (frame, Int)) {
 
@@ -923,6 +938,8 @@ class MovieClip extends flash.display.MovieClip {
 
 
 	@:noCompletion override private function __releaseResources(){
+
+		super.__releaseResources();
 
 		if(__9SliceBitmap != null ){
 			__9SliceBitmap.dispose();
