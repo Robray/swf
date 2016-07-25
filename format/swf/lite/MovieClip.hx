@@ -164,6 +164,8 @@ class MovieClip extends flash.display.MovieClip {
 		do{
 			__currentFrame = target;
 			__updateFrame ();
+			
+			__playing = true;
 		} while(target != __currentFrame);
 			
 	}
@@ -177,6 +179,8 @@ class MovieClip extends flash.display.MovieClip {
 		do{
 			__currentFrame = target;
 			__updateFrame ();
+			
+			__playing = true;
 		} while(target != __currentFrame);
 		
 		stop ();
