@@ -288,7 +288,28 @@ class SWFLiteExporter {
 				alpha.uncompress ();
 				alpha.position = 0;
 
-				var image = lime.graphics.format.JPEG.decodeBytes (data.bitmapData, mergeAlphaChannel);
+				var bytes:haxe.io.Bytes = data.bitmapData;
+
+				// :HACK: as per specification:
+				// Before version 8 of the SWF file format, SWF files could contain an erroneous header of 0xFF, 0xD9, 0xFF, 0xD8  before the JPEG SOI marker.
+
+				if (data.version < 8) {
+					
+					var byteArray = data.bitmapData;
+					for( index in 0...byteArray.length - 3 ) {
+						if (
+							byteArray[index + 1] == 0xD9
+							&& byteArray[index + 3] == 0xD8
+							&& byteArray[index] == 0xFF
+							&& byteArray[index + 2] == 0xFF
+							) {
+								bytes = bytes.sub(index + 2, byteArray.length - index - 2);
+						}
+					}
+					
+				}
+
+				var image = lime.graphics.format.JPEG.decodeBytes (bytes, mergeAlphaChannel);
 
 				if( mergeAlphaChannel ){
 					var width = image.width;
