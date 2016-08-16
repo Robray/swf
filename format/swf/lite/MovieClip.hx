@@ -159,14 +159,15 @@ class MovieClip extends flash.display.MovieClip {
 	
 	public override function gotoAndPlay (frame:#if flash flash.utils.Object #else Dynamic #end, scene:String = null):Void {
 
-	  __goto(frame, scene);
+		__goto(frame, scene);
 	}
 	
 	
 	public override function gotoAndStop (frame:#if flash flash.utils.Object #else Dynamic #end, scene:String = null):Void {
 
-	  __goto(frame, scene);
-		stop ();
+		if(__goto(frame, scene)) {
+			stop ();
+		}
 	}
 	
 	public override function nextFrame ():Void {
@@ -528,26 +529,30 @@ class MovieClip extends flash.display.MovieClip {
 		
 		return index;
 	}
-	
-	@:noCompletion private function __goto (frame:#if flash flash.utils.Object #else Dynamic #end, scene:String = null):Void	{
 
-		if(__targetFrame == null){
+	@:noCompletion private function __goto (frame:#if flash flash.utils.Object #else Dynamic #end, scene:String = null):Bool	{
 
-	  play ();
-	  __targetFrame = __getFrame (frame);
+		if(__targetFrame == null) {
 
-	  do{
-	    __currentFrame = __targetFrame;
-	    __updateFrame ();
+			play ();
+			__targetFrame = __getFrame (frame);
 
-	    __playing = true;
-	  } while(__targetFrame != __currentFrame);
+			do {
+				__currentFrame = __targetFrame;
+				__updateFrame ();
+
+				__playing = true;
+			} while (__targetFrame != __currentFrame);
 
 			__targetFrame = null;
+
+			return true;
 		}
-		else{
+		else {
 
 			__targetFrame = __getFrame (frame);
+
+			return false;
 		}
 
 	}
