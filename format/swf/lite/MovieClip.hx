@@ -531,6 +531,8 @@ class MovieClip extends flash.display.MovieClip {
 	
 	@:noCompletion private function __goto (frame:#if flash flash.utils.Object #else Dynamic #end, scene:String = null):Void	{
 
+		if(__targetFrame == null){
+
 	  play ();
 	  __targetFrame = __getFrame (frame);
 
@@ -540,6 +542,13 @@ class MovieClip extends flash.display.MovieClip {
 
 	    __playing = true;
 	  } while(__targetFrame != __currentFrame);
+
+			__targetFrame = null;
+		}
+		else{
+
+			__targetFrame = __getFrame (frame);
+		}
 
 	}
 	
