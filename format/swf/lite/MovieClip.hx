@@ -566,10 +566,13 @@ class MovieClip extends flash.display.MovieClip {
 			if (Std.is (displayObject, DynamicTextField)) {
 				
 				dynamicTextField = cast displayObject;
-				
-				displayObject.x += dynamicTextField.symbol.x;
-				displayObject.y += dynamicTextField.symbol.y #if flash + 4 #end;
-				
+
+				var mat = frameObject.matrix;
+				var x = dynamicTextField.symbol.x;
+				var y = dynamicTextField.symbol.y;
+
+				displayObject.x += mat.a * x + mat.c * y;
+				displayObject.y += mat.b * x + mat.d * y #if flash + 4 #end;
 			}
 			
 		}
