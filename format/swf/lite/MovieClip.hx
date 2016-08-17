@@ -608,6 +608,10 @@ class MovieClip extends flash.display.MovieClip {
 						
 						filters.push (new GlowFilter (color, alpha, blurX, blurY, strength, quality, inner, knockout));
 					
+					case GradientGlowFilter (distance, angle, colors, alphas, ratios, blurX, blurY, strength, quality, type, knockout):
+						
+						filters.push (new GradientGlowFilter (distance, angle, colors, alphas, ratios, blurX, blurY, strength, quality, type, knockout));
+					
 				}
 				
 			}
