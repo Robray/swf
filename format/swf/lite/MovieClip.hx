@@ -51,12 +51,12 @@ class MovieClip extends flash.display.MovieClip {
 	@:noCompletion private var __timeElapsed:Int;
 	@:noCompletion private var __zeroSymbol:Int;
 	@:noCompletion private var __drawingBitmapData:Bool;
-	
+	@:noCompletion private var __targetFrame:Int;
+
 	#if flash
 	@:noCompletion private var __currentFrame:Int;
 	@:noCompletion private var __previousTime:Int;
 	@:noCompletion private var __totalFrames:Int;
-	@:noCompletion private var __targetFrame:Int;
 	@:noCompletion private var __currentLabels:Array<FrameLabel>;
 	#end
 	
