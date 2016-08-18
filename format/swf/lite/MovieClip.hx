@@ -14,6 +14,7 @@ import format.swf.lite.symbols.BitmapSymbol;
 import format.swf.lite.symbols.ButtonSymbol;
 import format.swf.lite.symbols.DynamicTextSymbol;
 import format.swf.lite.symbols.ShapeSymbol;
+import format.swf.lite.symbols.MorphShapeSymbol;
 import format.swf.lite.symbols.SpriteSymbol;
 import format.swf.lite.symbols.StaticTextSymbol;
 import format.swf.lite.timeline.FrameObject;
@@ -305,7 +306,11 @@ class MovieClip extends flash.display.MovieClip {
 			} else if (Std.is (symbol, ShapeSymbol)) {
 				
 				displayObject = __createShape (cast symbol);
-				
+
+			} else if (Std.is (symbol, MorphShapeSymbol)) {
+
+				displayObject = __createMorphShape (cast symbol);
+
 			} else if (Std.is (symbol, BitmapSymbol)) {
 				
 				displayObject = new Bitmap (__getBitmap (cast symbol), PixelSnapping.AUTO, true);
@@ -403,8 +408,13 @@ class MovieClip extends flash.display.MovieClip {
 		return shape;
 		
 	}
-	
-	
+
+	@:noCompletion private function __createMorphShape (symbol:MorphShapeSymbol): MorphShape {
+
+		return new MorphShape( __swf, symbol);
+
+	}
+
 	@:noCompletion @:dox(hide) public #if (!flash && openfl && !openfl_legacy) override #end function __enterFrame (deltaTime:Int):Void {
 		
 		if (__playing) {
@@ -434,10 +444,10 @@ class MovieClip extends flash.display.MovieClip {
 		#end
 		
 	}
-	
-	
-	@:noCompletion private function __getBitmap (symbol:BitmapSymbol):BitmapData {
-		
+
+
+	@:noCompletion private static function __getBitmap (symbol:BitmapSymbol):BitmapData {
+
 		#if openfl
 		
 		if (Assets.cache.hasBitmapData (symbol.path)) {
@@ -547,8 +557,34 @@ class MovieClip extends flash.display.MovieClip {
 		
 		return index;
 	}
-	
-	
+
+	@:noCompletion private function __goto (frame:#if flash flash.utils.Object #else Dynamic #end, scene:String = null):Bool	{
+
+		if(__targetFrame == null) {
+
+			play ();
+			__targetFrame = __getFrame (frame);
+
+			do {
+				__currentFrame = __targetFrame;
+				__updateFrame ();
+
+				__playing = true;
+			} while (__targetFrame != __currentFrame);
+
+			__targetFrame = null;
+
+			return true;
+		}
+		else {
+
+			__targetFrame = __getFrame (frame);
+
+			return false;
+		}
+
+	}
+
 	@:noCompletion private function __placeObject (displayObject:DisplayObject, frameObject:FrameObject):Void {
 		
 		if (frameObject.name != null) {
@@ -571,7 +607,14 @@ class MovieClip extends flash.display.MovieClip {
 				displayObject.y += dynamicTextField.symbol.y #if flash + 4 #end;
 				
 			}
-			
+
+		}
+
+		if (Std.is (displayObject, MorphShape) && frameObject.ratio != null) {
+
+			var morphShape : MorphShape = cast displayObject;
+
+			morphShape.ratio = frameObject.ratio;
 		}
 		
 		if (frameObject.colorTransform != null) {
