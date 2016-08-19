@@ -51,7 +51,8 @@ class MovieClip extends flash.display.MovieClip {
 	@:noCompletion private var __timeElapsed:Int;
 	@:noCompletion private var __zeroSymbol:Int;
 	@:noCompletion private var __drawingBitmapData:Bool;
-	
+	@:noCompletion private var __targetFrame:Int;
+
 	#if flash
 	@:noCompletion private var __currentFrame:Int;
 	@:noCompletion private var __previousTime:Int;
@@ -158,35 +159,16 @@ class MovieClip extends flash.display.MovieClip {
 	
 	public override function gotoAndPlay (frame:#if flash flash.utils.Object #else Dynamic #end, scene:String = null):Void {
 
-		play ();			
-		var target = __getFrame (frame);
-		
-		do{
-			__currentFrame = target;
-			__updateFrame ();
-			
-			__playing = true;
-		} while(target != __currentFrame);
-			
+		__goto(frame, scene);
 	}
 	
 	
 	public override function gotoAndStop (frame:#if flash flash.utils.Object #else Dynamic #end, scene:String = null):Void {
 
-		play ();
-		var target = __getFrame (frame);
-		
-		do{
-			__currentFrame = target;
-			__updateFrame ();
-			
-			__playing = true;
-		} while(target != __currentFrame);
-		
-		stop ();
-			
+		if(__goto(frame, scene)) {
+			stop ();
+		}
 	}
-	
 	
 	public override function nextFrame ():Void {
 		
@@ -547,7 +529,33 @@ class MovieClip extends flash.display.MovieClip {
 		
 		return index;
 	}
-	
+
+	@:noCompletion private function __goto (frame:#if flash flash.utils.Object #else Dynamic #end, scene:String = null):Bool	{
+
+		if(__targetFrame == null) {
+
+			play ();
+			__targetFrame = __getFrame (frame);
+
+			do {
+				__currentFrame = __targetFrame;
+				__updateFrame ();
+
+				__playing = true;
+			} while (__targetFrame != __currentFrame);
+
+			__targetFrame = null;
+
+			return true;
+		}
+		else {
+
+			__targetFrame = __getFrame (frame);
+
+			return false;
+		}
+
+	}
 	
 	@:noCompletion private function __placeObject (displayObject:DisplayObject, frameObject:FrameObject):Void {
 		
