@@ -33,6 +33,7 @@ import format.swf.tags.TagDefineButton2;
 import format.swf.tags.TagDefineEditText;
 import format.swf.tags.TagDefineFont;
 import format.swf.tags.TagDefineFont2;
+import format.swf.tags.TagDefineFont3;
 import format.swf.tags.TagDefineFont4;
 import format.swf.tags.TagDefineShape;
 import format.swf.tags.TagDefineSprite;
@@ -746,6 +747,7 @@ class SWFLiteExporter {
 		symbol.id = tag.characterId;
 		
 		var records = [];
+		var fontIsScaled : Bool = false;
 		
 		for (record in tag.records) {
 			
@@ -761,6 +763,10 @@ class SWFLiteExporter {
 				processTag (defineFont);
 				font = cast swfLite.symbols.get (record.fontId);
 				
+				if (Std.is(defineFont, TagDefineFont3))
+				{
+					fontIsScaled = true;
+				}
 			}
 			
 			if (record.hasColor) textRecord.color = record.textColor;
@@ -802,12 +808,8 @@ class SWFLiteExporter {
 		}
 		
 		symbol.records = records;
-		
-		var matrix = tag.textMatrix.matrix;
-		matrix.tx *= (1 / 20);
-		matrix.ty *= (1 / 20);
-		
-		symbol.matrix = matrix;
+		symbol.matrix = tag.textMatrix.matrix;
+		symbol.shapeIsScaled = fontIsScaled;
 		
 		swfLite.symbols.set (symbol.id, symbol);
 		
