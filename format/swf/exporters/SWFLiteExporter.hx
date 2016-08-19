@@ -510,20 +510,6 @@ class SWFLiteExporter {
 		symbol.morphFillStyles = tag.morphFillStyles;
 		symbol.morphLineStyles = tag.morphLineStyles;
 
-		/*for (command in handler.commands) {
-
-			switch (command) {
-
-				case BeginBitmapFill (bitmapID, _, _, _):
-
-					processTag (cast data.getCharacter (bitmapID));
-
-				default:
-
-			}
-
-		}*/
-
 		swfLite.symbols.set (symbol.id, symbol);
 
 		return symbol;
