@@ -808,7 +808,12 @@ class SWFLiteExporter {
 		}
 		
 		symbol.records = records;
-		symbol.matrix = tag.textMatrix.matrix;
+		
+		var matrix = tag.textMatrix.matrix;
+		matrix.tx *= (1 / 20);
+		matrix.ty *= (1 / 20);
+		
+		symbol.matrix = matrix;
 		symbol.shapeIsScaled = fontIsScaled;
 		
 		swfLite.symbols.set (symbol.id, symbol);
