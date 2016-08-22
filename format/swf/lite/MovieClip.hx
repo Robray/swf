@@ -558,33 +558,6 @@ class MovieClip extends flash.display.MovieClip {
 		return index;
 	}
 
-	@:noCompletion private function __goto (frame:#if flash flash.utils.Object #else Dynamic #end, scene:String = null):Bool	{
-
-		if(__targetFrame == null) {
-
-			play ();
-			__targetFrame = __getFrame (frame);
-
-			do {
-				__currentFrame = __targetFrame;
-				__updateFrame ();
-
-				__playing = true;
-			} while (__targetFrame != __currentFrame);
-
-			__targetFrame = null;
-
-			return true;
-		}
-		else {
-
-			__targetFrame = __getFrame (frame);
-
-			return false;
-		}
-
-	}
-
 	@:noCompletion private function __placeObject (displayObject:DisplayObject, frameObject:FrameObject):Void {
 		
 		if (frameObject.name != null) {
