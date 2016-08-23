@@ -15,6 +15,7 @@ import format.swf.lite.symbols.BitmapSymbol;
 import format.swf.lite.symbols.ButtonSymbol;
 import format.swf.lite.symbols.DynamicTextSymbol;
 import format.swf.lite.symbols.FontSymbol;
+import format.swf.lite.symbols.MorphShapeSymbol;
 import format.swf.lite.symbols.ShapeSymbol;
 import format.swf.lite.symbols.SpriteSymbol;
 import format.swf.lite.symbols.StaticTextSymbol;
@@ -35,6 +36,7 @@ import format.swf.tags.TagDefineFont;
 import format.swf.tags.TagDefineFont2;
 import format.swf.tags.TagDefineFont3;
 import format.swf.tags.TagDefineFont4;
+import format.swf.tags.TagDefineMorphShape;
 import format.swf.tags.TagDefineShape;
 import format.swf.tags.TagDefineSprite;
 import format.swf.tags.TagDefineText;
@@ -473,7 +475,7 @@ class SWFLiteExporter {
 		var symbol = new ShapeSymbol ();
 		symbol.id = tag.characterId;
 		
-		var handler = new ShapeCommandExporter (data);
+		var handler = new ShapeCommandExporter ();
 		tag.export (handler);
 		
 		symbol.commands = handler.commands;
@@ -499,6 +501,23 @@ class SWFLiteExporter {
 	}
 	
 	
+	private function addMorphShape (tag:TagDefineMorphShape):MorphShapeSymbol {
+
+		var symbol = new MorphShapeSymbol ();
+		symbol.id = tag.characterId;
+
+		symbol.startEdges = tag.startEdges;
+		symbol.endEdges = tag.endEdges;
+		symbol.morphFillStyles = tag.morphFillStyles;
+		symbol.morphLineStyles = tag.morphLineStyles;
+
+		swfLite.symbols.set (symbol.id, symbol);
+
+		return symbol;
+
+	}
+
+
 	private function addSprite (tag:SWFTimelineContainer, root:Bool = false):SpriteSymbol {
 		
 		var symbol = new SpriteSymbol ();
@@ -603,6 +622,10 @@ class SWFLiteExporter {
 
 				if( placeTag.hasBlendMode) {
 					frameObject.blendMode = format.swf.data.consts.BlendMode.toString(placeTag.blendMode);
+				}
+
+				if( placeTag.hasRatio) {
+					frameObject.ratio = placeTag.ratio / 65535;
 				}
 
 				if (placeTag.hasFilterList) {
@@ -779,7 +802,7 @@ class SWFLiteExporter {
 			
 			if (font != null) {
 				
-				var handler = new ShapeCommandExporter (data);
+				var handler = new ShapeCommandExporter ();
 				
 				for (glyphEntry in record.glyphEntries) {
 					
@@ -866,6 +889,10 @@ class SWFLiteExporter {
 				
 				return addShape (cast tag);
 				
+			} else if (Std.is (tag, TagDefineMorphShape)) {
+
+				return addMorphShape (cast tag);
+
 			} else if (Std.is (tag, TagDefineFont) || Std.is (tag, TagDefineFont4)) {
 				
 				return addFont (tag);
