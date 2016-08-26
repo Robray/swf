@@ -14,6 +14,7 @@ import format.swf.lite.symbols.BitmapSymbol;
 import format.swf.lite.symbols.ButtonSymbol;
 import format.swf.lite.symbols.DynamicTextSymbol;
 import format.swf.lite.symbols.ShapeSymbol;
+import format.swf.lite.symbols.MorphShapeSymbol;
 import format.swf.lite.symbols.SpriteSymbol;
 import format.swf.lite.symbols.StaticTextSymbol;
 import format.swf.lite.timeline.FrameObject;
@@ -51,6 +52,7 @@ class MovieClip extends flash.display.MovieClip {
 	@:noCompletion private var __timeElapsed:Int;
 	@:noCompletion private var __zeroSymbol:Int;
 	@:noCompletion private var __drawingBitmapData:Bool;
+	@:noCompletion private var __targetFrame:Null<Int>;
 
 	#if flash
 	@:noCompletion private var __currentFrame:Int;
@@ -158,35 +160,16 @@ class MovieClip extends flash.display.MovieClip {
 
 	public override function gotoAndPlay (frame:#if flash flash.utils.Object #else Dynamic #end, scene:String = null):Void {
 
-		play ();			
-		var target = __getFrame (frame);
-		
-		do{
-			__currentFrame = target;
-			__updateFrame ();
-			
-			__playing = true;
-		} while(target != __currentFrame);
-			
+		__goto(frame, scene);
 	}
 
 
 	public override function gotoAndStop (frame:#if flash flash.utils.Object #else Dynamic #end, scene:String = null):Void {
 
-		play ();
-		var target = __getFrame (frame);
-		
-		do{
-			__currentFrame = target;
-			__updateFrame ();
-			
-			__playing = true;
-		} while(target != __currentFrame);
-		
-		stop ();
-
+		if(__goto(frame, scene)) {
+			stop ();
+		}
 	}
-
 
 	public override function nextFrame ():Void {
 
@@ -306,6 +289,10 @@ class MovieClip extends flash.display.MovieClip {
 
 				displayObject = __createShape (cast symbol);
 
+			} else if (Std.is (symbol, MorphShapeSymbol)) {
+
+				displayObject = __createMorphShape (cast symbol);
+
 			} else if (Std.is (symbol, BitmapSymbol)) {
 
 				displayObject = new Bitmap (__getBitmap (cast symbol), PixelSnapping.AUTO, true);
@@ -404,6 +391,11 @@ class MovieClip extends flash.display.MovieClip {
 
 	}
 
+	@:noCompletion private function __createMorphShape (symbol:MorphShapeSymbol): MorphShape {
+
+		return new MorphShape( __swf, symbol);
+
+	}
 
 	@:noCompletion @:dox(hide) public #if (!flash && openfl && !openfl_legacy) override #end function __enterFrame (deltaTime:Int):Void {
 
@@ -436,7 +428,7 @@ class MovieClip extends flash.display.MovieClip {
 	}
 
 
-	@:noCompletion private function __getBitmap (symbol:BitmapSymbol):BitmapData {
+	@:noCompletion private static function __getBitmap (symbol:BitmapSymbol):BitmapData {
 
 		#if openfl
 
@@ -462,14 +454,14 @@ class MovieClip extends flash.display.MovieClip {
 
 				var alpha = LimeAssets.getImage (symbol.alpha, false);
 				source.copyChannel (alpha, alpha.rect, new Vector2 (), ImageChannel.RED, ImageChannel.ALPHA);
-				
+
 				//symbol.alpha = null;
 				source.buffer.premultiplied = true;
-				
+
 				#if !sys
 				source.premultiplied = false;
 				#end
-				
+
 			}
 
 			#if !flash
@@ -518,9 +510,7 @@ class MovieClip extends flash.display.MovieClip {
 	@:noCompletion private function __getFrame (frame:Dynamic):Int {
 
 		var index:Int = 0;
-		
-		var index:Int = 0;	
-		
+
 		if (Std.is (frame, Int)) {
 
 			index = cast frame;
@@ -541,16 +531,42 @@ class MovieClip extends flash.display.MovieClip {
 
 		}
 
-		if (index < 1){
+		if(index < 1){
 			index = 1;
 		} else if (index > __totalFrames){
 			index = __totalFrames;
 		}
-		
+
 		return index;
 	}
 
+	@:noCompletion private function __goto (frame:#if flash flash.utils.Object #else Dynamic #end, scene:String = null):Bool	{
 
+		if(__targetFrame == null) {
+
+			play ();
+			__targetFrame = __getFrame (frame);
+
+			do {
+				__currentFrame = __targetFrame;
+				__updateFrame ();
+
+				__playing = true;
+			} while (__targetFrame != __currentFrame);
+
+			__targetFrame = null;
+
+			return true;
+		}
+		else {
+
+			__targetFrame = __getFrame (frame);
+
+			return false;
+		}
+
+	}
+	
 	@:noCompletion private function __placeObject (displayObject:DisplayObject, frameObject:FrameObject):Void {
 
 		if (frameObject.name != null) {
@@ -560,19 +576,30 @@ class MovieClip extends flash.display.MovieClip {
 		}
 
 		if (frameObject.matrix != null) {
-		
-			displayObject.transform.matrix = frameObject.matrix;
-			
-			var dynamicTextField:DynamicTextField;
-			
-			if (Std.is (displayObject, DynamicTextField)) {
-				
-				dynamicTextField = cast displayObject;
-				
-				displayObject.x += dynamicTextField.symbol.x;
-				displayObject.y += dynamicTextField.symbol.y #if flash + 4 #end;
 
+			displayObject.transform.matrix = frameObject.matrix;
+
+			var dynamicTextField:DynamicTextField;
+
+			if (Std.is (displayObject, DynamicTextField)) {
+
+				dynamicTextField = cast displayObject;
+
+				var mat = frameObject.matrix;
+				var x = dynamicTextField.symbol.x;
+				var y = dynamicTextField.symbol.y;
+
+				displayObject.x += mat.a * x + mat.c * y;
+				displayObject.y += mat.b * x + mat.d * y #if flash + 4 #end;
 			}
+
+		}
+
+		if (Std.is (displayObject, MorphShape) && frameObject.ratio != null) {
+
+			var morphShape : MorphShape = cast displayObject;
+
+			morphShape.ratio = frameObject.ratio;
 		}
 
 		if (frameObject.colorTransform != null) {
@@ -608,6 +635,10 @@ class MovieClip extends flash.display.MovieClip {
 					case GlowFilter (color, alpha, blurX, blurY, strength, quality, inner, knockout):
 
 						filters.push (new GlowFilter (color, alpha, blurX, blurY, strength, quality, inner, knockout));
+
+					case GradientGlowFilter (distance, angle, colors, alphas, ratios, blurX, blurY, strength, quality, type, knockout):
+
+						filters.push (new GradientGlowFilter (distance, angle, colors, alphas, ratios, blurX, blurY, strength, quality, type, knockout));
 
 				}
 
@@ -695,24 +726,24 @@ class MovieClip extends flash.display.MovieClip {
 		var frame = __symbol.frames[0];
 
 		for( object_id in __objects.keys() ){
-			
+
 			var remove:Bool = true;
-			
+
 			for (frameObject in frame.objects){
-				
+
 					if( frameObject.id == object_id ){
-						
+
 							remove = false;
 							break;
 					}
 			}
 
 			if(remove){
-				
+
 					var displayObject = __objects.get (object_id);
 
 					if(displayObject != null){
-						
+
 							removeChild(displayObject);
 
 							__maskData.remove(displayObject);
@@ -734,7 +765,7 @@ class MovieClip extends flash.display.MovieClip {
 		var update_transform = true;
 
 		frame = __symbol.frames[index];
-		
+
 		__currentFrame = index + 1;
 		__lastUpdate = index + 1;
 
@@ -949,40 +980,40 @@ class MovieClip extends flash.display.MovieClip {
 	}
 
 	@:noCompletion private function __debugPrintChildren( parentSymbolID: Int = -1 ):Void {
-		
+
 		var print :Bool = false;
 		if(parentSymbolID < 0 || parentSymbolID == __symbol.id){
 			print = true;
 		}
-		
+
 		if(print){
-		
+
 			for( objectID in __objects.keys() ){
-				
+
 				var object = __objects.get(objectID);
-				
+
 				var maxNameLength = 20;
 				var objectName = object.name;
 				var isMask = __maskData.exists(object);
-				
+
 				if(objectName.length < maxNameLength){
-					
+
 					var spaceNumber = maxNameLength - objectName.length;
-					
+
 					for (i in 0...spaceNumber){
 						objectName += " ";
 					}
 				}
-				
+
 				switch (isMask) {
-					
+
 					case true:
-						trace("parent (" + __symbol.id + ")\t\t\t | " + "mask   \t " + objectName + "\t\t\t | depth = " + __SWFDepthData.get(object) + "\t | mask = " + __maskData.get(object));	
+						trace("parent (" + __symbol.id + ")\t\t\t | " + "mask   \t " + objectName + "\t\t\t | depth = " + __SWFDepthData.get(object) + "\t | mask = " + __maskData.get(object));
 					case false:
 						trace("parent (" + __symbol.id + ")\t\t\t | " + "object \t " + objectName + "\t\t\t | depth = " + __SWFDepthData.get(object) + "\t |");
 				}
 			}
-			
+
 			trace("-");
 		}
 	}
